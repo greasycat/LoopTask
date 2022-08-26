@@ -96,11 +96,15 @@ EditorBuildSettings:
     path: Assets/Landmarks/ChrastilLab/graphPrefs/vicky08-x.unity
     guid: f2d6d032365e74778b08ccec7889995d
   m_configObjects:
+    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: c9a3a827f489e45a5be93cf6a942a45c,
+      type: 2}
     Unity.XR.OpenVR.Settings: {fileID: 11400000, guid: 1de6e19b8b3f0dd47bd1227dbbbe2a39,
       type: 2}
     com.unity.addressableassets: {fileID: 11400000, guid: 4bca43c939d6142679246b969d5cc6b2,
       type: 2}
-    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 69208d6714e1d3f40bdc661476569532,
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: bac06ef1e71da49f1b8cf64d17f9c74c,
       type: 2}
-    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: f638717ecc45fed459a40c87fa5ca562,
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: b4ee2b254445c4c50a5e58e09d8afb35,
+      type: 2}
+    xr.sdk.mock-hmd.settings: {fileID: 11400000, guid: e5bae603f672249cc8e90a62cc8ec18a,
       type: 2}
