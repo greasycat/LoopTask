@@ -48,10 +48,11 @@ public class Config : MonoBehaviour
     public string experiment = "default";
     public string ui = "default";
     public ConfigRunMode runMode = ConfigRunMode.NEW;
-    public List<string> conditions = new List<string>();
+    public List<string> conditions = new();
     [Tooltip("Treat the first n scenes in the build list as practice and run them first")] 
-    public int practiceTrialCount;
-    public List<string> levelNames = new List<string>();
+    public int practiceLevelCount;
+    public bool getLevelsFromBuildSettings;
+    public List<string> levelNames = new();
     public bool randomSceneOrder;
     [Tooltip("Read Only: Use as index for scence/condition")]
     public int levelNumber;
@@ -110,24 +111,28 @@ public class Config : MonoBehaviour
         }
     }
 
-    // Ensure that the instance is destroyed when the game is stopped in the editor.
-    void OnApplicationQuit()
-    {
-        s_Instance = null;
-        PlayerPrefs.SetInt("Screenmanager Is Fullscreen mode", 0);
-        PlayerPrefs.SetInt("Screenmanager Resolution Width", 968);
-        PlayerPrefs.SetInt("Screenmanager Resolution Height", 768);
-    }
 
     public void Initialize(Config config)
     {
         Debug.Log("Initializing the Config");
 
-        // add every scene (except the startup scene this is in
-        for (int i = 1; i < SceneManager.sceneCountInBuildSettings; i++)
+        // Handle which scenes to configure and how
+        if (getLevelsFromBuildSettings)
         {
-            //config.levelNames.Add(SceneManager.sceneCountInBuildSettings);
-            config.levelNames.Add(Path.GetFileNameWithoutExtension(SceneUtility.GetScenePathByBuildIndex(i)));
+            // add every scene (except the startup scene this is in)
+            for (int i = 1; i < SceneManager.sceneCountInBuildSettings; i++)
+            {
+                //config.levelNames.Add(SceneManager.sceneCountInBuildSettings);
+                config.levelNames.Add(Path.GetFileNameWithoutExtension(SceneUtility.GetScenePathByBuildIndex(i)));
+            }
+        }
+        else 
+        {
+            if (!config.levelNames.Contains(SceneManager.GetActiveScene().name) || config.levelNames.Count == 0)
+            {
+                config.levelNames.Clear();
+                config.levelNames.Add(SceneManager.GetActiveScene().name);
+            }
         }
 
         // If we are running the scenes in a randomized order
@@ -135,7 +140,7 @@ public class Config : MonoBehaviour
         {
             for (int i = 0; i < config.levelNames.Count; i++)
             {
-                if (i >= practiceTrialCount)
+                if (i >= practiceLevelCount)
                 {
                     Debug.Log("Shuffling");
                     var temp = config.levelNames[i]; // grab the ith object
@@ -170,6 +175,5 @@ public class Config : MonoBehaviour
             conditions.RemoveAt(conditions.Count - 1);
         }
     }
-
 }
 

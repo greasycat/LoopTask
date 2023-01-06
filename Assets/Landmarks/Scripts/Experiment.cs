@@ -73,8 +73,8 @@ public class Experiment : MonoBehaviour
     public dbLog dblog;
     [HideInInspector]
     public long playback_time;
-    [HideInInspector]
-    public LM_TrialLog trialLogger;
+    //[HideInInspector]
+    //public LM_TrialLog trialLogger;
     [HideInInspector]
     public string logfile;
     [HideInInspector]
@@ -96,10 +96,6 @@ public class Experiment : MonoBehaviour
     protected AvatarController avatarController;
     protected HUD hud;
 
-    // For counting trials
-    public TextMeshProUGUI trialCounter; 
-
-
     // -------------------------------------------------------------------------
     // -------------------------- Builtin Methods ------------------------------
     // -------------------------------------------------------------------------
@@ -112,7 +108,7 @@ public class Experiment : MonoBehaviour
         // Clean up & Initialize Scene
         // ------------------------------
 
-        trialLogger = new LM_TrialLog();
+        // trialLogger = new LM_TrialLog();
 
         // check if we have any old Landmarks instances from LoadScene.cs and handle them
         GameObject oldInstance = GameObject.Find("OldInstance");
@@ -207,7 +203,7 @@ public class Experiment : MonoBehaviour
                     Debug.Log("OVERWRITING EXISTING AZURE-EDITOR DATA");
                     dataPath =
                         Directory.GetCurrentDirectory() + "/" +
-                        "data/tmp/";
+                        "editor-data/";
                     logfile =
                         "test.log";
                 }
@@ -215,10 +211,9 @@ public class Experiment : MonoBehaviour
             // otherwise just save to the project folder for easy access
             else
             {
-                Debug.Log("OVERWRITING EXISTING EDITOR DATA");
                 dataPath =
                     Directory.GetCurrentDirectory() + "/" +
-                    "data/tmp/";
+                    "editor-data/";
                 logfile =
                     "test.log";
             }
@@ -253,11 +248,22 @@ public class Experiment : MonoBehaviour
                 dataPath +
                 config.filename;
 
+
+        Debug.Log("!!!!!!!!!!!!\t" + SceneManager.GetActiveScene().name + "\t" + config.levelNames[0]);
         if (!Directory.Exists(dataPath))
         {
             Directory.CreateDirectory(dataPath);
         }
-
+        // Prevent editor log files from appending to a previous session's LM_TaskLog
+        // by deleting the directory and recreating, unless we're loading multiple scenes
+        // in which case we would want to append to these editor files
+        else if (Directory.Exists(dataPath) & Application.isEditor & 
+                SceneManager.GetActiveScene().name == config.levelNames[0])
+        {
+            Debug.Log("OVERWRITING EXISTING EDITOR DATA");
+            Directory.Delete(dataPath, recursive:true);
+            Directory.CreateDirectory(dataPath);
+        }
 
         if (config.runMode == ConfigRunMode.NEW)
         {
@@ -315,8 +321,6 @@ public class Experiment : MonoBehaviour
         {
             scaledEnvironment = null;
         }
-
-        if (trialCounter != null) trialCounter.text = string.Format("{0} / {1}", config.levelNumber + 1 - config.practiceTrialCount, config.levelNames.Count - config.practiceTrialCount);
     }
 
     async void Update()
@@ -360,24 +364,14 @@ public class Experiment : MonoBehaviour
         // Handle the selected UI enum from the inspector
         if (config.ui != "default")
         {
-            switch (config.ui)
+            userInterface = config.ui switch
             {
-                case "KeyboardMouse":
-                    userInterface = UserInterface.KeyboardMouse;
-                    break;
-                case "ViveVirtualizer":
-                    userInterface = UserInterface.ViveVirtualizer;
-                    break;
-                case "ViveRoomspace":
-                    userInterface = UserInterface.ViveRoomspace;
-                    break;
-                case "ViveKatwalk":
-                    userInterface = UserInterface.ViveKatwalk;
-                    break;
-                default:
-                    userInterface = UserInterface.KeyboardMouse;
-                    break;
-            }
+                "KeyboardMouse" => UserInterface.KeyboardMouse,
+                "ViveVirtualizer" => UserInterface.ViveVirtualizer,
+                "ViveRoomspace" => UserInterface.ViveRoomspace,
+                "ViveKatwalk" => UserInterface.ViveKatwalk,
+                _ => UserInterface.KeyboardMouse,
+            };
         }
 
         // Based on the UserInterface enum that was selected, get the player
@@ -637,6 +631,8 @@ public class Experiment : MonoBehaviour
         // close the logfile
         dblog.close();
 
+        
+
         // ---------------------------------------------------------------------
         // Generate a clean .csv file for each task in the experiment
         // ---------------------------------------------------------------------
@@ -724,6 +720,12 @@ public class Experiment : MonoBehaviour
         }
         Debug.Log("Clean log files have been generated for each task");
 
+        // Shut down any LM_TaskLogs
+        foreach (var log in FindObjectsOfType<LM_TaskLog>())
+        {
+            log.output.Close();
+        }
+
 
         // ---------------------------------------------------------------------
         // Upload any files staged for Microsoft Azure
@@ -751,19 +753,21 @@ public class Experiment : MonoBehaviour
         // If there is another level, load it
         if (config.levelNumber < config.levelNames.Count)
         {
-            // // Load the next Scene
-            // if (usingVR)
-            // {
-            //     // Use steam functions to avoid issues w/ framerate drop
-            //     SteamVR_LoadLevel.Begin(config.levelNames[config.levelNumber]);
-            //     Debug.Log("Loading new VR scene");
-            // }
-            // else
-            // {
+            // Load the next Scene
+            if (usingVR)
+            {
+                // Use steam functions to avoid issues w/ framerate drop
+
+                SteamVR_LoadLevel.Begin(config.levelNames[config.levelNumber]);
+                Destroy(transform.parent.gameObject);
+                Debug.Log("Loading new VR scene");
+            }
+            else
+            {
                 SceneManager.LoadSceneAsync(config.levelNames[config.levelNumber]); 
                 Destroy(transform.parent.gameObject);
                 // otherwise, just load the level like usual
-            // }
+            }
         }
         // Otherwise, close down; we're done
         else
