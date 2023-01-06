@@ -1,0 +1,2 @@
+id,condition,sceneName,sceneNumber,task,block,trial,Navigate_target,Navigate_actualPath,Navigate_optimalPath,Navigate_excessPath,Navigate_clockwiseTravel,Navigate_duration,
+default,default,demo_SimpleSample_50x50,1,TASK_NavigationTask,1,1,Red Sphere,22.22001,20.66502,1.554989,-42.68036,34.63471,

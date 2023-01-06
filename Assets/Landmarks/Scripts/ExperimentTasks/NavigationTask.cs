@@ -172,7 +172,7 @@ public class NavigationTask : ExperimentTask
             }
             catch (System.Exception ex)
             {
-                Debug.LogException(ex);
+                Debug.LogWarning(ex);
             }
         }
 
@@ -214,13 +214,17 @@ public class NavigationTask : ExperimentTask
 
 
         // Look for any LM_Decsion Points we will want to track
-        if (FindObjectsOfType<LM_DecisionPoint>().Length > 0) decisionPoints = FindObjectsOfType<LM_DecisionPoint>();
-
-        // Clear any decisions on LM_DecisionPoints
-        foreach (var pt in decisionPoints)
+        if (FindObjectsOfType<LM_DecisionPoint>().Length > 0)
         {
-            pt.ResetDecisionPoint();
+            decisionPoints = FindObjectsOfType<LM_DecisionPoint>();
+
+            // Clear any decisions on LM_DecisionPoints
+            foreach (var pt in decisionPoints)
+            {
+                pt.ResetDecisionPoint();
+            }
         }
+        
     }
 
     public override bool updateTask ()
@@ -362,9 +366,14 @@ public class NavigationTask : ExperimentTask
         }
 
         // re-enable everything on the gameobject we just finished finding
-        current.GetComponent<MeshRenderer>().enabled = true;
-        current.GetComponent<Collider>().enabled = true;
-        var halo = (Behaviour) current.GetComponent("Halo");
+        try
+        {
+            current.GetComponent<MeshRenderer>().enabled = true;
+            current.GetComponent<Collider>().enabled = true;
+        }
+        catch { }
+
+        var halo = (Behaviour)current.GetComponent("Halo");
         if(halo != null) halo.enabled = true;
 
         if (canIncrementLists)
@@ -378,12 +387,9 @@ public class NavigationTask : ExperimentTask
 
         hud.SecondsToShow = hud.GeneralDuration;
 
-        if (assistCompass != null)
-        {
-            // Hide the assist compass
-            assistCompass.gameObject.SetActive(false);
-        }
-        
+        // Hide the assist compass
+        assistCompass?.gameObject.SetActive(false);
+
         // Move hud back to center and reset
         hud.hudPanel.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
         hud.hudPanel.GetComponent<RectTransform>().anchorMax = new Vector2(1, 1);
@@ -438,13 +444,15 @@ public class NavigationTask : ExperimentTask
                     trialLog.AddData(nexus.name + "_finalChoice", nexus.currentChoice);
                     trialLog.AddData(nexus.name + "_totalChoices", nexus.totalChoices.ToString());
                 }
+
+                foreach (var pt in decisionPoints)
+                {
+                    pt.ResetDecisionPoint();
+                }
             }
         }
 
-        foreach (var pt in decisionPoints)
-        {
-            pt.ResetDecisionPoint();
-        }
+
 
         // If we created a dummy Objectlist for exploration, destroy it
         Destroy(GetComponent<ObjectList>());
@@ -456,7 +464,7 @@ public class NavigationTask : ExperimentTask
 		{
 			if (showScoring)
 			{
-				score = score + scoreIncrement;
+				score += scoreIncrement;
 				hud.setScore(score);
 			}
 			return true;

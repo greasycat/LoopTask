@@ -274,7 +274,9 @@ public class Experiment : MonoBehaviour
             dblog = new dbPlaybackLog(dataPath + logfile);
         }
 
-        dblog.log("EXPERIMENT:\t" + PlayerPrefs.GetString("expID") + "\tSUBJECT:\t" + config.subject +
+        if (config.levelNames.Count == 0) config.levelNames.Add(SceneManager.GetActiveScene().name);
+        if (config.conditions.Count == 0) config.conditions.Add("default");
+        dblog.log("EXPERIMENT:\t" + config.experiment + "\tSUBJECT:\t" + config.subject +
                   "\tSTART_SCENE\t" + config.levelNames[config.levelNumber] + "\tSTART_CONDITION:\t" + config.conditions[config.levelNumber] + "\tUI:\t" + userInterface.ToString(), 1);
     }
 
