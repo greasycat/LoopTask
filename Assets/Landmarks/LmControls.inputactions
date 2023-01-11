@@ -1,0 +1,292 @@
+{
+    "name": "LmControls",
+    "maps": [
+        {
+            "name": "Landmarks",
+            "id": "ae9928eb-a9a9-4658-89c7-f3208ed0329b",
+            "actions": [
+                {
+                    "name": "PlayerConfirm",
+                    "type": "Button",
+                    "id": "d193acf1-40ae-4f64-a7ed-0fd104ee89f0",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ExperimenterConfirm",
+                    "type": "Button",
+                    "id": "7f96dd06-1550-4c4b-af8a-2b14c50d7d49",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "FirstPersonMovement",
+                    "type": "Value",
+                    "id": "8ac15ac3-c7a4-44b8-ba99-dc53d79456c6",
+                    "expectedControlType": "Dpad",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "FirstPersonViewpoint",
+                    "type": "Value",
+                    "id": "ee612c80-fc70-4714-ba6d-f14075c2323d",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "875a6fc7-4303-4f59-b185-fbc6a422278c",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "PlayerConfirm",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0f5ac71b-7756-41e2-9803-624d69782ae8",
+                    "path": "<TrackedDevice>/triggerPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR-VIVE",
+                    "action": "PlayerConfirm",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6e5fe4b3-a11e-4aec-b0f4-e160cdfffc20",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse;XR-VIVE",
+                    "action": "ExperimenterConfirm",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "WASD",
+                    "id": "50913e31-922c-4440-a606-d60f3cf0bef5",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "FirstPersonMovement",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "dde74dbb-7c90-4d8b-803c-f71b2610021a",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "012ed0d3-b9bf-466c-a5a4-582cf537f00a",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "b3e8260b-9fe3-4df4-b34d-3975f667f596",
+                    "path": "<Keyboard>/#(A)",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "818e3f3f-055e-4447-9ebc-cc96ee57b0e6",
+                    "path": "<Keyboard>/#(D)",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "ArrowKeys",
+                    "id": "70a05eb5-6d0c-4d90-b8b4-a038da9a6eee",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "FirstPersonMovement",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "34877073-6730-4176-a61a-3c19bbd3462e",
+                    "path": "<Keyboard>/upArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "e423e360-a99a-4750-b90b-8c05327b57ba",
+                    "path": "<Keyboard>/downArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "6b8c56dd-17f5-4cd0-bd88-552a2bed40fd",
+                    "path": "<Keyboard>/leftArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "57ac536c-8d26-4fb4-8c78-486f581f47b7",
+                    "path": "<Keyboard>/rightArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonMovement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Vertical",
+                    "id": "fb514893-00e6-4eb3-a0b4-89ae5f683cd4",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "FirstPersonViewpoint",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "83746377-fe32-404d-8210-79d2e6347819",
+                    "path": "<Mouse>/delta/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonViewpoint",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "35206a1e-11b0-402f-8c39-e10a73f18bb4",
+                    "path": "<Mouse>/delta/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonViewpoint",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Horizontal",
+                    "id": "afbf83b8-1299-44da-b5ca-344d2dd166de",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "FirstPersonViewpoint",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "357313af-bf4e-4c8f-94e5-0c19cde21a5d",
+                    "path": "<Mouse>/delta/left",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonViewpoint",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "23c202ad-027c-4e58-8116-40ecde05655e",
+                    "path": "<Mouse>/delta/right",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard-Mouse",
+                    "action": "FirstPersonViewpoint",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "Keyboard-Mouse",
+            "bindingGroup": "Keyboard-Mouse",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Mouse>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        },
+        {
+            "name": "XR-VIVE",
+            "bindingGroup": "XR-VIVE",
+            "devices": [
+                {
+                    "devicePath": "<OpenVRHMD>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<ViveWand>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}
