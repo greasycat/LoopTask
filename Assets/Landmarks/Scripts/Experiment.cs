@@ -40,7 +40,8 @@ public enum UserInterface
     KeyboardMouse,
     ViveRoomspace,
     ViveVirtualizer,
-    ViveKatwalk
+    ViveKatwalk,
+    FMRI,
 }
 
 public class Experiment : MonoBehaviour

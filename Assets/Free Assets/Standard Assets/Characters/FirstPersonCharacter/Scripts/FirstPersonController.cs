@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityStandardAssets.CrossPlatformInput;
 using UnityStandardAssets.Utility;
 using Random = UnityEngine.Random;
@@ -24,9 +25,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField] private CurveControlledBob m_HeadBob = new CurveControlledBob();
         [SerializeField] private LerpControlledBob m_JumpBob = new LerpControlledBob();
         [SerializeField] private float m_StepInterval;
-        [SerializeField] private AudioClip[] m_FootstepSounds;    // an array of footstep sounds that will be randomly selected from.
-        [SerializeField] private AudioClip m_JumpSound;           // the sound played when character leaves the ground.
-        [SerializeField] private AudioClip m_LandSound;           // the sound played when character touches back on ground.
+
+        [SerializeField]
+        private AudioClip[] m_FootstepSounds; // an array of footstep sounds that will be randomly selected from.
+
+        [SerializeField] private AudioClip m_JumpSound; // the sound played when character leaves the ground.
+        [SerializeField] private AudioClip m_LandSound; // the sound played when character touches back on ground.
 
         private Camera m_Camera;
         private bool m_Jump;
@@ -41,6 +45,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private float m_NextStep;
         private bool m_Jumping;
         private AudioSource m_AudioSource;
+
+        private float _radius;
+        private float _rotationSpeed;
+        private Vector3 _loopCenter;
+        private bool _autoModeEnabled;
+        private float _startingAngle;
+        private float _stoppingAngle;
+
 
         // Use this for initialization
         private void Start()
@@ -61,7 +73,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         // Update is called once per frame
         private void Update()
         {
-            RotateView();
+            // RotateView();
             // the jump state needs to read here to make sure it is not missed
             if (!m_Jump)
             {
@@ -75,6 +87,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 m_MoveDir.y = 0f;
                 m_Jumping = false;
             }
+
             if (!m_CharacterController.isGrounded && !m_Jumping && m_PreviouslyGrounded)
             {
                 m_MoveDir.y = 0f;
@@ -94,15 +107,41 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void FixedUpdate()
         {
-            float speed;
-            GetInput(out speed);
-            // always move along the camera forward as it is the direction that it being aimed at
-            Vector3 desiredMove = transform.forward * m_Input.y + transform.right * m_Input.x;
+            if (!_autoModeEnabled)
+            {
+                HandleManualMovement();
+            }
+            else
+            {
+                HandleManualMovement();
+            }
+        }
+        
+        private void HandleAutoMovement()
+        {
+            if (_startingAngle < _stoppingAngle)
+            {
+                // Move the player in a circle
+                _startingAngle += _rotationSpeed * Time.fixedDeltaTime * 0.1f;
+                var x = Mathf.Cos(_startingAngle) * _radius + _loopCenter.x;
+                var z = Mathf.Sin(_startingAngle) * _radius + _loopCenter.z;
+                var y = _loopCenter.y;
+                var newPosition = new Vector3(x, y, z);
+                var tf = m_CharacterController.transform;
+                var direction = newPosition - tf.position;
+                tf.position = new Vector3(x, y, z);
+                m_CharacterController.transform.rotation = Quaternion.LookRotation(direction);
+            }
+        }
 
+        private void HandleManualMovement()
+        {
+            GetInput(out var speed);
+            var desiredMove = transform.forward * m_Input.y + transform.right * m_Input.x;
+            // always move along the camera forward as it is the direction that it being aimed at
             // get a normal for the surface that is being touched to move along it
-            RaycastHit hitInfo;
-            Physics.SphereCast(transform.position, m_CharacterController.radius, Vector3.down, out hitInfo,
-                               m_CharacterController.height / 2f, Physics.AllLayers, QueryTriggerInteraction.Ignore);
+            Physics.SphereCast(transform.position, m_CharacterController.radius, Vector3.down, out var hitInfo,
+                m_CharacterController.height / 2f, Physics.AllLayers, QueryTriggerInteraction.Ignore);
             desiredMove = Vector3.ProjectOnPlane(desiredMove, hitInfo.normal).normalized;
 
             m_MoveDir.x = desiredMove.x * speed;
@@ -126,17 +165,33 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 m_MoveDir += Physics.gravity * m_GravityMultiplier * Time.fixedDeltaTime;
             }
 
-            // MJS 10/2019 - checking if controller is enabled 
+
             if (m_CharacterController.enabled)
             {
                 m_CollisionFlags = m_CharacterController.Move(m_MoveDir * Time.fixedDeltaTime);
             }
 
-
             ProgressStepCycle(speed);
             UpdateCameraPosition(speed);
-
+            //
             m_MouseLook.UpdateCursorLock();
+        }
+
+        public void TestAutoMode(float radius, float speed, float startingAngle, float stoppingAngle,
+            Vector3 circleCenter, Vector3 startingCenter)
+        {
+            _radius = radius;
+            _rotationSpeed = speed;
+            _startingAngle = startingAngle;
+            _stoppingAngle = stoppingAngle;
+            _loopCenter = circleCenter;
+            _autoModeEnabled = true;
+            m_CharacterController.transform.position = startingCenter;
+        }
+
+        public void StopAutoMode()
+        {
+            _autoModeEnabled = false;
         }
 
 
@@ -151,8 +206,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             if (m_CharacterController.velocity.sqrMagnitude > 0 && (m_Input.x != 0 || m_Input.y != 0))
             {
-                m_StepCycle += (m_CharacterController.velocity.magnitude + (speed * (m_IsWalking ? 1f : m_RunstepLenghten))) *
-                             Time.fixedDeltaTime;
+                m_StepCycle += (m_CharacterController.velocity.magnitude +
+                                (speed * (m_IsWalking ? 1f : m_RunstepLenghten))) *
+                               Time.fixedDeltaTime;
             }
 
             if (!(m_StepCycle > m_NextStep))
@@ -172,6 +228,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 return;
             }
+
             // pick & play a random footstep sound from the array,
             // excluding sound at index 0
             int n = Random.Range(1, m_FootstepSounds.Length);
@@ -190,11 +247,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 return;
             }
+
             if (m_CharacterController.velocity.magnitude > 0 && m_CharacterController.isGrounded)
             {
                 m_Camera.transform.localPosition =
                     m_HeadBob.DoHeadBob(m_CharacterController.velocity.magnitude +
-                                      (speed * (m_IsWalking ? 1f : m_RunstepLenghten)));
+                                        (speed * (m_IsWalking ? 1f : m_RunstepLenghten)));
                 newCameraPosition = m_Camera.transform.localPosition;
                 newCameraPosition.y = m_Camera.transform.localPosition.y - m_JumpBob.Offset();
             }
@@ -203,6 +261,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 newCameraPosition = m_Camera.transform.localPosition;
                 newCameraPosition.y = m_OriginalCameraPosition.y - m_JumpBob.Offset();
             }
+
             m_Camera.transform.localPosition = newCameraPosition;
         }
 
@@ -259,6 +318,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 return;
             }
+
             body.AddForceAtPosition(m_CharacterController.velocity * 0.1f, hit.point, ForceMode.Impulse);
         }
 

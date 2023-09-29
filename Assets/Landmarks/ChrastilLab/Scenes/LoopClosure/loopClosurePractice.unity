@@ -1255,7 +1255,7 @@ PrefabInstance:
     - target: {fileID: 7138999635973292108, guid: 02c093612c0fb41c5811b315385cf8b2,
         type: 3}
       propertyPath: userInterface
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7699151896212841829, guid: 02c093612c0fb41c5811b315385cf8b2,
         type: 3}
