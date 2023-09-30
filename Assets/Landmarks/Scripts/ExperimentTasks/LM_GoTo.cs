@@ -99,13 +99,14 @@ public class LM_GoTo : ExperimentTask
                 }
             }
 
-            if (Input.GetButtonDown("Return") | Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetButtonDown("Return") | Input.GetKeyDown(KeyCode.Return) | hud.actionButtonClicked)
             {
-                if (Input.GetButtonDown("Return") | Input.GetKeyDown(KeyCode.Return))
+                // if (Input.GetButtonDown("Return") | Input.GetKeyDown(KeyCode.Return) | hud.actionButtonClicked)
                 {
                     log.log("INPUT_EVENT    Player Arrived at Destination    1", 1);
                     hud.hudPanel.SetActive(false);
                     hud.setMessage("");
+                    hud.actionButtonClicked = false;  
                     return true;
                 }
             }

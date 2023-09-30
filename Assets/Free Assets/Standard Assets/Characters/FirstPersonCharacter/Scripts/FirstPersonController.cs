@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityStandardAssets.CrossPlatformInput;
@@ -46,12 +48,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool m_Jumping;
         private AudioSource m_AudioSource;
 
-        private float _radius;
-        private float _rotationSpeed;
-        private Vector3 _loopCenter;
         private bool _autoModeEnabled;
-        private float _startingAngle;
-        private float _stoppingAngle;
+
+        private Coroutine _coroutine;
 
 
         // Use this for initialization
@@ -111,27 +110,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 HandleManualMovement();
             }
-            else
-            {
-                HandleManualMovement();
-            }
-        }
-        
-        private void HandleAutoMovement()
-        {
-            if (_startingAngle < _stoppingAngle)
-            {
-                // Move the player in a circle
-                _startingAngle += _rotationSpeed * Time.fixedDeltaTime * 0.1f;
-                var x = Mathf.Cos(_startingAngle) * _radius + _loopCenter.x;
-                var z = Mathf.Sin(_startingAngle) * _radius + _loopCenter.z;
-                var y = _loopCenter.y;
-                var newPosition = new Vector3(x, y, z);
-                var tf = m_CharacterController.transform;
-                var direction = newPosition - tf.position;
-                tf.position = new Vector3(x, y, z);
-                m_CharacterController.transform.rotation = Quaternion.LookRotation(direction);
-            }
         }
 
         private void HandleManualMovement()
@@ -177,21 +155,120 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_MouseLook.UpdateCursorLock();
         }
 
-        public void TestAutoMode(float radius, float speed, float startingAngle, float stoppingAngle,
-            Vector3 circleCenter, Vector3 startingCenter)
+        public void TestAutoMode(Vector3 loopPosition,
+            Vector3 startingPosition, float stoppingAngle, bool counterclockwise,
+            float walkingSpeed, float turningSpeed, float loopingSpeed, HUD hud
+            )
         {
-            _radius = radius;
-            _rotationSpeed = speed;
-            _startingAngle = startingAngle;
-            _stoppingAngle = stoppingAngle;
-            _loopCenter = circleCenter;
             _autoModeEnabled = true;
-            m_CharacterController.transform.position = startingCenter;
+            var startingFacingDirection = (startingPosition - Vector3.zero).normalized;
+            Vector3 readyFacingDirection;
+            if (counterclockwise)
+            {
+                readyFacingDirection = Quaternion.AngleAxis(90, Vector3.down) * startingFacingDirection;
+            }
+            else
+            {
+                readyFacingDirection = Quaternion.AngleAxis(90, Vector3.up) * startingFacingDirection;
+            }
+
+            StopAutoCoroutine();
+            transform.position = new Vector3(0f, 0.1f, 0f);
+            transform.rotation = Quaternion.identity;
+            _coroutine = StartCoroutine(RunALoop(startingPosition, startingFacingDirection, walkingSpeed,
+                readyFacingDirection, turningSpeed,
+                counterclockwise, stoppingAngle, loopPosition, loopingSpeed, hud));
         }
 
         public void StopAutoMode()
         {
             _autoModeEnabled = false;
+        }
+
+        private void StopAutoCoroutine()
+        {
+            if (_coroutine != null)
+                StopCoroutine(_coroutine);
+        }
+
+        private IEnumerator Turn(Vector3 targetRotation, float speed)
+        {
+            var rotation = Quaternion.LookRotation(targetRotation);
+            var startRot = transform.rotation;
+            // get the shortest angle
+            var angle = Quaternion.Angle(startRot, rotation);
+            var duration = angle / (speed * 10);
+            for (var t = 0f; t < duration; t += Time.deltaTime)
+            {
+                transform.rotation = Quaternion.Slerp(startRot, rotation, t / duration);
+                yield return null;
+            }
+
+            transform.rotation = rotation;
+        }
+
+        private IEnumerator WalkTo(Vector3 targetPosition, Vector3 facingDirection, float speed)
+        {
+            var startPosition = transform.position;
+            transform.rotation = Quaternion.LookRotation(facingDirection);
+            var duration = Vector3.Distance(startPosition, targetPosition) / speed * 2f;
+            for (var t = 0f; t < duration; t += Time.deltaTime)
+            {
+                transform.position = Vector3.Lerp(startPosition, targetPosition, t / duration);
+                yield return null;
+            }
+
+            transform.position = targetPosition;
+        }
+
+        private IEnumerator Loop(bool counterclockwise, float stoppingAngle, Vector3 loopCenterPosition, float speed)
+        {
+            // calculate the current angle, 180 to -180
+            var currentAngle = Mathf.Atan2(transform.position.z - loopCenterPosition.z,
+                transform.position.x - loopCenterPosition.x);
+            // convert to 0 to 360
+            if (currentAngle < 0) currentAngle += 2 * Mathf.PI;
+
+            float finalAngle;
+            if (counterclockwise)
+            {
+                finalAngle = currentAngle + stoppingAngle;
+            }
+            else
+            {
+                finalAngle = currentAngle - stoppingAngle;
+            }
+
+            var radius = Vector3.Distance(transform.position, loopCenterPosition);
+
+            Debug.Log($"Current angle: {currentAngle * 180 / Mathf.PI}");
+            Debug.Log($"stopping angle: {stoppingAngle * 180 / Mathf.PI}");
+            Debug.Log($"Final angle: {finalAngle * 180 / Mathf.PI}");
+            for (var w = 0f; w < stoppingAngle; w += Time.deltaTime * speed * 0.1f)
+            {
+                var angle = currentAngle + (counterclockwise ? 1 : -1) * w;
+                var x = Mathf.Cos(angle) * radius + loopCenterPosition.x;
+                var z = Mathf.Sin(angle) * radius + loopCenterPosition.z;
+                var y = loopCenterPosition.y;
+                var newPosition = new Vector3(x, y, z);
+                var direction = newPosition - m_CharacterController.transform.position;
+                m_CharacterController.transform.position = newPosition;
+                m_CharacterController.transform.rotation = Quaternion.LookRotation(direction);
+                yield return null;
+            }
+        }
+
+        private IEnumerator RunALoop(Vector3 startingPositions, Vector3 startingFacingDirection, float walkingSpeed,
+            Vector3 readyFacingDirection, float turningSpeed,
+            bool counterclockwise, float stoppingAngle, Vector3 loopPosition, float rotationSpeed,
+            HUD hud)
+        {
+            yield return WalkTo(startingPositions, startingFacingDirection, walkingSpeed);
+            yield return Turn(readyFacingDirection, turningSpeed);
+            yield return new WaitForSeconds(2f);
+            hud.OnActionClick();
+            yield return Loop(counterclockwise, stoppingAngle, loopPosition, rotationSpeed);
+            hud.OnActionClick();
         }
 
 

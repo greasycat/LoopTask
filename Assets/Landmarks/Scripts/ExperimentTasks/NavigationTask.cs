@@ -365,12 +365,13 @@ public class NavigationTask : ExperimentTask
                     return true;
                 }
             }
-            if (Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetKeyDown(KeyCode.Return) || hud.actionButtonClicked)
             {
                 Debug.Log("Participant ended the trial");
                 log.log("INPUT_EVENT    Player Arrived at Destination    1", 1);
                 hud.hudPanel.SetActive(false);
                 hud.setMessage("");
+                hud.actionButtonClicked = false;
                 return true;
             }
         }
