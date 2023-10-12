@@ -71,6 +71,17 @@ public class ObserverController : MonoBehaviour
 
         StartCoroutine(StartTrial());
     }
+    
+    public void StartButtonClickRecenter()
+    {
+        if (firstTime)
+        {
+            _hud.OnActionClick();
+            firstTime = false;
+        }
+
+        StartCoroutine(StartTrial(true));
+    }
 
     private Vector3 ConvertTypeToVector(string type)
     {
@@ -97,7 +108,7 @@ public class ObserverController : MonoBehaviour
         return float.Parse(match[0].Value);
     }
     
-    private IEnumerator StartTrial()
+    private IEnumerator StartTrial(bool recenter = false)
     {
         yield return new WaitUntil(()=> moveObject.destination != null);
         Debug.Log($"Destination: {moveObject.destination.name}");
@@ -105,15 +116,33 @@ public class ObserverController : MonoBehaviour
         // use the following format xx-xx-xx
         var destinationName = moveObject.destination.name;
         var destinationNameSplit = destinationName.Split('-');
+        var speedSplit = speedInput.text.Split(',');
         try
         {
             var type = ConvertTypeToVector(destinationNameSplit[0]);
             var radius = GetNumber(destinationNameSplit[1]);
             var clock = destinationNameSplit[2].ToLower();
             var counterClockwise = clock == "counter";
+            var rotation = 90f;
+            if (destinationNameSplit.Length == 4)
+            {
+                rotation = float.Parse(destinationNameSplit[3]);
+            }
+            
+            if (speedSplit.Length != 4)
+            {
+                AddErrorMessage("Invalid Speed Format\n" + "Reason: Speed must be in the format x,y,z");
+                yield break;
+            }
+            
+            var walkingSpeed = float.Parse(speedSplit[0]);
+            var turningSpeed = float.Parse(speedSplit[1]);
+            var loopingSpeed = float.Parse(speedSplit[2]);
+            var duration = float.Parse(speedSplit[3]);
+            
             
             Debug.Log("Type: " + type + " Radius: " + radius + " Clock: " + clock);
-            _playerController.TestAutoMode(Vector3.zero, type*radius,ToRadians(90), counterClockwise, 3, 3, 3, _hud);
+            _playerController.TestAutoMode(Vector3.zero, type*radius,ToRadians(rotation), counterClockwise, walkingSpeed, turningSpeed, loopingSpeed, _hud, duration ,recenter);
         } catch (System.Exception e)
         {
             AddErrorMessage("Invalid Target Naming Format\n" + $"Reason: {e.Message}");

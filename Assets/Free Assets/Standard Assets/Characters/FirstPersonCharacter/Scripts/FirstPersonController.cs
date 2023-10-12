@@ -157,7 +157,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         public void TestAutoMode(Vector3 loopPosition,
             Vector3 startingPosition, float stoppingAngle, bool counterclockwise,
-            float walkingSpeed, float turningSpeed, float loopingSpeed, HUD hud
+            float walkingSpeed, float turningSpeed, float loopingSpeed, HUD hud, float waitTime = 2f, bool recenter = false
             )
         {
             _autoModeEnabled = true;
@@ -173,11 +173,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             StopAutoCoroutine();
-            transform.position = new Vector3(0f, 0.1f, 0f);
-            transform.rotation = Quaternion.identity;
             _coroutine = StartCoroutine(RunALoop(startingPosition, startingFacingDirection, walkingSpeed,
                 readyFacingDirection, turningSpeed,
-                counterclockwise, stoppingAngle, loopPosition, loopingSpeed, hud));
+                counterclockwise, stoppingAngle, loopPosition, loopingSpeed, hud, waitTime, recenter));
         }
 
         public void StopAutoMode()
@@ -190,6 +188,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (_coroutine != null)
                 StopCoroutine(_coroutine);
         }
+        
+        // private IEnumerator WalkAndTurn
 
         private IEnumerator Turn(Vector3 targetRotation, float speed)
         {
@@ -210,7 +210,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private IEnumerator WalkTo(Vector3 targetPosition, Vector3 facingDirection, float speed)
         {
             var startPosition = transform.position;
-            transform.rotation = Quaternion.LookRotation(facingDirection);
+            // transform.rotation = Quaternion.LookRotation(facingDirection);
             var duration = Vector3.Distance(startPosition, targetPosition) / speed * 2f;
             for (var t = 0f; t < duration; t += Time.deltaTime)
             {
@@ -261,11 +261,18 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private IEnumerator RunALoop(Vector3 startingPositions, Vector3 startingFacingDirection, float walkingSpeed,
             Vector3 readyFacingDirection, float turningSpeed,
             bool counterclockwise, float stoppingAngle, Vector3 loopPosition, float rotationSpeed,
-            HUD hud)
+            HUD hud, float waitTime = 2, bool restartAtCenter = true)
         {
+            if (restartAtCenter)
+            {
+                var direction = loopPosition - transform.position;
+                yield return Turn(direction, turningSpeed);
+                yield return WalkTo(loopPosition, direction, walkingSpeed);
+            }
+            yield return Turn(startingPositions - transform.position, turningSpeed);
             yield return WalkTo(startingPositions, startingFacingDirection, walkingSpeed);
             yield return Turn(readyFacingDirection, turningSpeed);
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(waitTime);
             hud.OnActionClick();
             yield return Loop(counterclockwise, stoppingAngle, loopPosition, rotationSpeed);
             hud.OnActionClick();
