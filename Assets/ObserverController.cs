@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Landmarks.Scripts;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -106,6 +108,56 @@ public class ObserverController : MonoBehaviour
         var pattern = @"[-+]?\d*\.?\d+";
         var match = Regex.Matches(input, pattern).Cast<Match>().Take(1).ToList();
         return float.Parse(match[0].Value);
+    }
+
+    public void RunAllTrials()
+    {
+        if (firstTime)
+        {
+            _hud.OnActionClick();
+            firstTime = false;
+        }
+
+        StartCoroutine(RunAllActionSets());
+    }
+
+    public IEnumerator RunAllActionSets()
+    {
+        yield return new WaitUntil(()=> moveObject.destination != null);
+        var actionSet = new LM_ActionSet(moveObject.destination.transform);
+        foreach (var action in actionSet)
+        {
+            switch (action.type)
+            {
+                case ActionType.Teleport:
+                    Debug.Log("Teleport");
+                    yield return _playerController.TeleportAction((LM_TeleportAction)action);
+                    break;
+                case ActionType.Loop:
+                    Debug.Log("Loop");
+                    yield return _playerController.LoopAction((LM_LoopAction)action);
+                    break;
+                case ActionType.WalkTo:
+                    Debug.Log("WalkTo");
+                    yield return _playerController.WalkToAction((LM_WalkToAction)action);
+                    break;
+                case ActionType.Trigger:
+                    Debug.Log("Trigger");
+                    yield return _playerController.TriggerAction((LM_TriggerAction)action, _hud);
+                    break;
+                case ActionType.Pause:
+                    Debug.Log("Pause");
+                    yield return _playerController.PauseAction((LM_PauseAction)action);
+                    break;
+                case ActionType.None:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+
+
     }
     
     private IEnumerator StartTrial(bool recenter = false)

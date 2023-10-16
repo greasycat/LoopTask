@@ -16,75 +16,103 @@
 
 using UnityEngine;
 using System.Collections;
+using Landmarks.Scripts;
 
-public class MoveObject : ExperimentTask {
+public class MoveObject : ExperimentTask
+{
+    [Header("Task-specific Properties")] public GameObject start;
+    public GameObject destination;
+    public ObjectList destinations;
+    public bool useLocalRotation = true;
 
-	[Header("Task-specific Properties")]
-	public GameObject start;
-	public GameObject destination;
-	public ObjectList destinations;
-	public bool useLocalRotation = true;
-	
-	public bool swap;
-	private static Vector3 position;
-	private static Quaternion rotation;
+    public bool swap;
+    private static Vector3 position;
+    private static Quaternion rotation;
+    
+    public bool destinationFromActionSet = false;
 
 
-	public override void startTask () {
-		TASK_START();
-	}	
+    public override void startTask()
+    {
+        TASK_START();
+    }
 
-	public override void TASK_START()
-	{
-		base.startTask();
-		
-		if (!manager) Start();
-		
-		
-		if (skip) {
-			log.log("INFO	skip task	" + name,1 );
-			return;
-		}
-		
-		if ( destinations ) {
-			destination = destinations.currentObject();		
-		}
-		
-		position = start.transform.position;
-		if (useLocalRotation) rotation = start.transform.localRotation;
+    public override void TASK_START()
+    {
+        base.startTask();
+
+        if (!manager) Start();
+
+
+        if (skip)
+        {
+            log.log("INFO	skip task	" + name, 1);
+            return;
+        }
+
+        if (destinations)
+        {
+            destination = destinations.currentObject();
+        }
+
+        position = start.transform.position;
+        if (useLocalRotation) rotation = start.transform.localRotation;
         else rotation = start.transform.rotation;
 
-		
-			start.transform.position = destination.transform.position;
-			log.log("TASK_ROTATE\t" + start.name + "\t" + this.GetType().Name + "\t" + start.transform.localEulerAngles.ToString("f1"),1);
+        // This is only valid for the looptask
+        // The footprint will use the the first walk to position
+        if (destinationFromActionSet)
+        {
+            
+            var actionSet = new LM_ActionSet(destination.transform);
+            start.transform.position = actionSet.GetFirstWalkToPosition();
+            Debug.Log("Destination from action set");
+            Debug.Log(actionSet.GetFirstWalkToPosition());
+            
+        }
+        else
+        {
+            start.transform.position = destination.transform.position;
+        }
+        log.log(
+            "TASK_ROTATE\t" + start.name + "\t" + this.GetType().Name + "\t" +
+            start.transform.localEulerAngles.ToString("f1"), 1);
 
-			if (useLocalRotation) start.transform.localRotation = destination.transform.localRotation;
-			else start.transform.rotation = destination.transform.rotation;
-			log.log("TASK_POSITION\t" + start.name + "\t" + this.GetType().Name + "\t" + start.transform.transform.position.ToString("f1"),1);
-		
-		if (swap) {
-			destination.transform.position = position;
-			if (useLocalRotation) destination.transform.localRotation = rotation;
-			else destination.transform.rotation = rotation;
-		}
-	}
-	
-	public override bool updateTask () {
-	    return true;
-	}
-	public override void endTask() {
-		TASK_END();
-	}
-	
-	public override void TASK_END() {
-		base.endTask();
-		
-		if ( destinations ) {
-			if (canIncrementLists)
-			{
-				destinations.incrementCurrent();
-				destination = destinations.currentObject();
-			}
-		}
-	}
+        if (useLocalRotation) start.transform.localRotation = destination.transform.localRotation;
+        else start.transform.rotation = destination.transform.rotation;
+        log.log(
+            "TASK_POSITION\t" + start.name + "\t" + this.GetType().Name + "\t" +
+            start.transform.transform.position.ToString("f1"), 1);
+
+        if (swap)
+        {
+            destination.transform.position = position;
+            if (useLocalRotation) destination.transform.localRotation = rotation;
+            else destination.transform.rotation = rotation;
+        }
+    }
+
+    public override bool updateTask()
+    {
+        return true;
+    }
+
+    public override void endTask()
+    {
+        TASK_END();
+    }
+
+    public override void TASK_END()
+    {
+        base.endTask();
+
+        if (destinations)
+        {
+            if (canIncrementLists)
+            {
+                destinations.incrementCurrent();
+                destination = destinations.currentObject();
+            }
+        }
+    }
 }

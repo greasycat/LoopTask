@@ -1,0 +1,4 @@
+name	Trial1	teleport	"0,0,0"	walkto	A	5	trigger	loop	"0,0,0"	1	90	clockwise	5	loop	"0,0,0"	1	90	clockwise	10		
+name	Trial2	teleport	"0,0,0"	walkto	B	5	trigger	loop	"0,0,0"	2	135	counterclockwise	5	pause	3	loop	"0,0,0"	2	90	counterclockwise	10
+name	Trial3	teleport	"0,0,0"	walkto	C	5	trigger	loop	"0,0,0"	2.5	135	clockwise	5	loop	"0,0,0"	2.5	90	counterclockwise	5		
+name	Trial4	teleport	"0,0,0"	walkto	D	5	trigger	loop	"0,0,0"	3	135	clockwise	5	pause	3	loop	"0,0,0"	3	90	counterclockwise	5

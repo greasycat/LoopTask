@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Landmarks.Scripts;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityStandardAssets.CrossPlatformInput;
@@ -157,8 +158,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         public void TestAutoMode(Vector3 loopPosition,
             Vector3 startingPosition, float stoppingAngle, bool counterclockwise,
-            float walkingSpeed, float turningSpeed, float loopingSpeed, HUD hud, float waitTime = 2f, bool recenter = false
-            )
+            float walkingSpeed, float turningSpeed, float loopingSpeed, HUD hud, float waitTime = 2f,
+            bool recenter = false
+        )
         {
             _autoModeEnabled = true;
             var startingFacingDirection = (startingPosition - Vector3.zero).normalized;
@@ -173,10 +175,55 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             StopAutoCoroutine();
-            _coroutine = StartCoroutine(RunALoop(startingPosition, startingFacingDirection, walkingSpeed,
+            _coroutine = StartCoroutine(RunALoop(startingPosition, walkingSpeed,
                 readyFacingDirection, turningSpeed,
                 counterclockwise, stoppingAngle, loopPosition, loopingSpeed, hud, waitTime, recenter));
         }
+
+        public IEnumerator TeleportAction(LM_TeleportAction action)
+        {
+            m_CharacterController.transform.position = action.destination;
+            yield return null;
+        }
+
+        public IEnumerator WalkToAction(LM_WalkToAction action)
+        {
+            Debug.Log("Walk to action");
+            var direction = action.destination - transform.position;
+            yield return TurnTo(direction, action.speed);
+            yield return WalkTo(action.destination, action.speed);
+            yield return null;
+        }
+
+        public IEnumerator LoopAction(LM_LoopAction action)
+        {
+            var counterClockwise = action.loopDirection == "counterclockwise";
+            Vector3 readyFacingDirection;
+            if (counterClockwise)
+            {
+                readyFacingDirection =
+                    Quaternion.AngleAxis(90, Vector3.down) * (transform.position - action.loopCenter);
+            }
+            else
+            {
+                readyFacingDirection = Quaternion.AngleAxis(90, Vector3.up) * (transform.position - action.loopCenter);
+            }
+            
+            yield return Loop(action.loopCenter, action.loopRadius, action.loopAngle, counterClockwise,
+                action.loopSpeed);
+        }
+        
+        public IEnumerator TriggerAction(LM_TriggerAction action, HUD hud)
+        {
+            yield return null;
+            hud.OnActionClick();
+        }
+        
+        public IEnumerator PauseAction(LM_PauseAction action)
+        {
+            yield return new WaitForSeconds(action.duration);
+        }
+
 
         public void StopAutoMode()
         {
@@ -188,11 +235,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (_coroutine != null)
                 StopCoroutine(_coroutine);
         }
-        
+
         // private IEnumerator WalkAndTurn
 
-        private IEnumerator Turn(Vector3 targetRotation, float speed)
+        private IEnumerator TurnTo(Vector3 targetRotation, float speed)
         {
+            Debug.Log("Turn to");
             var rotation = Quaternion.LookRotation(targetRotation);
             var startRot = transform.rotation;
             // get the shortest angle
@@ -207,8 +255,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
             transform.rotation = rotation;
         }
 
-        private IEnumerator WalkTo(Vector3 targetPosition, Vector3 facingDirection, float speed)
+        private IEnumerator WalkTo(Vector3 targetPosition, float speed)
         {
+            Debug.Log("walk to");
             var startPosition = transform.position;
             // transform.rotation = Quaternion.LookRotation(facingDirection);
             var duration = Vector3.Distance(startPosition, targetPosition) / speed * 2f;
@@ -221,7 +270,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
             transform.position = targetPosition;
         }
 
-        private IEnumerator Loop(bool counterclockwise, float stoppingAngle, Vector3 loopCenterPosition, float speed)
+        private IEnumerator Loop(
+            Vector3 loopCenterPosition,
+            float radius,
+            float differenceAngle,
+            bool counterclockwise,
+            float speed
+        )
         {
             // calculate the current angle, 180 to -180
             var currentAngle = Mathf.Atan2(transform.position.z - loopCenterPosition.z,
@@ -232,19 +287,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
             float finalAngle;
             if (counterclockwise)
             {
-                finalAngle = currentAngle + stoppingAngle;
+                finalAngle = currentAngle + differenceAngle;
             }
             else
             {
-                finalAngle = currentAngle - stoppingAngle;
+                finalAngle = currentAngle - differenceAngle;
             }
 
-            var radius = Vector3.Distance(transform.position, loopCenterPosition);
+            // var radius = Vector3.Distance(transform.position, loopCenterPosition);
 
             Debug.Log($"Current angle: {currentAngle * 180 / Mathf.PI}");
-            Debug.Log($"stopping angle: {stoppingAngle * 180 / Mathf.PI}");
+            Debug.Log($"stopping angle: {differenceAngle * 180 / Mathf.PI}");
             Debug.Log($"Final angle: {finalAngle * 180 / Mathf.PI}");
-            for (var w = 0f; w < stoppingAngle; w += Time.deltaTime * speed * 0.1f)
+            for (var w = 0f; w < differenceAngle; w += Time.deltaTime * speed * 0.1f)
             {
                 var angle = currentAngle + (counterclockwise ? 1 : -1) * w;
                 var x = Mathf.Cos(angle) * radius + loopCenterPosition.x;
@@ -258,7 +313,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
         }
 
-        private IEnumerator RunALoop(Vector3 startingPositions, Vector3 startingFacingDirection, float walkingSpeed,
+        private IEnumerator RunALoop(Vector3 startingPositions, float walkingSpeed,
             Vector3 readyFacingDirection, float turningSpeed,
             bool counterclockwise, float stoppingAngle, Vector3 loopPosition, float rotationSpeed,
             HUD hud, float waitTime = 2, bool restartAtCenter = true)
@@ -266,16 +321,17 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (restartAtCenter)
             {
                 var direction = loopPosition - transform.position;
-                yield return Turn(direction, turningSpeed);
-                yield return WalkTo(loopPosition, direction, walkingSpeed);
+                yield return TurnTo(direction, turningSpeed);
+                yield return WalkTo(loopPosition, walkingSpeed);
             }
-            yield return Turn(startingPositions - transform.position, turningSpeed);
-            yield return WalkTo(startingPositions, startingFacingDirection, walkingSpeed);
-            yield return Turn(readyFacingDirection, turningSpeed);
-            yield return new WaitForSeconds(waitTime);
-            hud.OnActionClick();
-            yield return Loop(counterclockwise, stoppingAngle, loopPosition, rotationSpeed);
-            hud.OnActionClick();
+
+            // yield return Turn(startingPositions - transform.position, turningSpeed);
+            // yield return WalkTo(startingPositions, walkingSpeed);
+            // yield return Turn(readyFacingDirection, turningSpeed);
+            // yield return new WaitForSeconds(waitTime);
+            // hud.OnActionClick();
+            // yield return Loop(counterclockwise, stoppingAngle, loopPosition, rotationSpeed);
+            // hud.OnActionClick();
         }
 
 
