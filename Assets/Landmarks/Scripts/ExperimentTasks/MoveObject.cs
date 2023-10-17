@@ -56,19 +56,39 @@ public class MoveObject : ExperimentTask
         }
 
         position = start.transform.position;
-        if (useLocalRotation) rotation = start.transform.localRotation;
-        else rotation = start.transform.rotation;
+        // if (useLocalRotation) rotation = start.transform.localRotation;
+        // else rotation = start.transform.rotation;
 
         // This is only valid for the looptask
         // The footprint will use the the first walk to position
         if (destinationFromActionSet)
         {
-            
+
             var actionSet = new LM_ActionSet(destination.transform);
-            start.transform.position = actionSet.GetFirstWalkToPosition();
-            Debug.Log("Destination from action set");
-            Debug.Log(actionSet.GetFirstWalkToPosition());
-            
+            var firstWalk = (LM_WalkToAction)actionSet.GetFirstActionOfType(ActionType.WalkTo);
+            start.transform.position = firstWalk.destination;
+
+            var firstLoop = (LM_LoopAction) actionSet.GetFirstActionOfType(ActionType.Loop);
+            if (firstLoop != null)
+            {
+                Debug.Log(firstWalk.destination);
+                Vector3 readyFacingDirection;
+                if (firstLoop.loopDirection == "counterclockwise")
+                {
+                    readyFacingDirection = firstLoop.loopCenter - firstWalk.destination;
+                }
+                else
+                {
+                    readyFacingDirection = (firstWalk.destination - firstLoop.loopCenter);
+                }
+                
+
+                start.transform.rotation = Quaternion.LookRotation(readyFacingDirection);
+                rotation = start.transform.rotation;
+                Debug.Log("Rotation to"+ rotation.eulerAngles);
+
+
+            }
         }
         else
         {
@@ -78,8 +98,8 @@ public class MoveObject : ExperimentTask
             "TASK_ROTATE\t" + start.name + "\t" + this.GetType().Name + "\t" +
             start.transform.localEulerAngles.ToString("f1"), 1);
 
-        if (useLocalRotation) start.transform.localRotation = destination.transform.localRotation;
-        else start.transform.rotation = destination.transform.rotation;
+        // if (useLocalRotation) start.transform.localRotation = destination.transform.localRotation;
+        // else start.transform.rotation = destination.transform.rotation;
         log.log(
             "TASK_POSITION\t" + start.name + "\t" + this.GetType().Name + "\t" +
             start.transform.transform.position.ToString("f1"), 1);

@@ -37,6 +37,16 @@ namespace Landmarks.Scripts
             return Vector3.zero;
         }
 
+        public LM_Action GetFirstActionOfType(ActionType type)
+        {
+            foreach (var action in _actions.Where(action => action.type == type))
+            {
+                return action;
+            }
+
+            return new LM_NoneAction();
+        }
+
         public IEnumerator<LM_Action> GetEnumerator()
         {
             return _actions.GetEnumerator();

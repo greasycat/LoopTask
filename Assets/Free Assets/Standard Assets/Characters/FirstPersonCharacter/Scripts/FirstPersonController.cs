@@ -156,30 +156,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_MouseLook.UpdateCursorLock();
         }
 
-        public void TestAutoMode(Vector3 loopPosition,
-            Vector3 startingPosition, float stoppingAngle, bool counterclockwise,
-            float walkingSpeed, float turningSpeed, float loopingSpeed, HUD hud, float waitTime = 2f,
-            bool recenter = false
-        )
-        {
-            _autoModeEnabled = true;
-            var startingFacingDirection = (startingPosition - Vector3.zero).normalized;
-            Vector3 readyFacingDirection;
-            if (counterclockwise)
-            {
-                readyFacingDirection = Quaternion.AngleAxis(90, Vector3.down) * startingFacingDirection;
-            }
-            else
-            {
-                readyFacingDirection = Quaternion.AngleAxis(90, Vector3.up) * startingFacingDirection;
-            }
-
-            StopAutoCoroutine();
-            _coroutine = StartCoroutine(RunALoop(startingPosition, walkingSpeed,
-                readyFacingDirection, turningSpeed,
-                counterclockwise, stoppingAngle, loopPosition, loopingSpeed, hud, waitTime, recenter));
-        }
-
         public IEnumerator TeleportAction(LM_TeleportAction action)
         {
             m_CharacterController.transform.position = action.destination;
@@ -190,25 +166,15 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             Debug.Log("Walk to action");
             var direction = action.destination - transform.position;
-            yield return TurnTo(direction, action.speed);
-            yield return WalkTo(action.destination, action.speed);
+            yield return TurnTo(direction, action.rotationSpeed);
+            yield return WalkTo(action.destination, action.walkingSpeed);
             yield return null;
         }
 
         public IEnumerator LoopAction(LM_LoopAction action)
         {
             var counterClockwise = action.loopDirection == "counterclockwise";
-            Vector3 readyFacingDirection;
-            if (counterClockwise)
-            {
-                readyFacingDirection =
-                    Quaternion.AngleAxis(90, Vector3.down) * (transform.position - action.loopCenter);
-            }
-            else
-            {
-                readyFacingDirection = Quaternion.AngleAxis(90, Vector3.up) * (transform.position - action.loopCenter);
-            }
-            
+
             yield return Loop(action.loopCenter, action.loopRadius, action.loopAngle, counterClockwise,
                 action.loopSpeed);
         }
@@ -223,8 +189,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             yield return new WaitForSeconds(action.duration);
         }
+        
 
-
+        public void EnableAutoMode()
+        {
+            _autoModeEnabled = true;
+        }
         public void StopAutoMode()
         {
             _autoModeEnabled = false;
@@ -268,6 +238,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             transform.position = targetPosition;
+            Debug.Log("Finished at target position: "+targetPosition);
         }
 
         private IEnumerator Loop(
@@ -312,28 +283,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 yield return null;
             }
         }
-
-        private IEnumerator RunALoop(Vector3 startingPositions, float walkingSpeed,
-            Vector3 readyFacingDirection, float turningSpeed,
-            bool counterclockwise, float stoppingAngle, Vector3 loopPosition, float rotationSpeed,
-            HUD hud, float waitTime = 2, bool restartAtCenter = true)
-        {
-            if (restartAtCenter)
-            {
-                var direction = loopPosition - transform.position;
-                yield return TurnTo(direction, turningSpeed);
-                yield return WalkTo(loopPosition, walkingSpeed);
-            }
-
-            // yield return Turn(startingPositions - transform.position, turningSpeed);
-            // yield return WalkTo(startingPositions, walkingSpeed);
-            // yield return Turn(readyFacingDirection, turningSpeed);
-            // yield return new WaitForSeconds(waitTime);
-            // hud.OnActionClick();
-            // yield return Loop(counterclockwise, stoppingAngle, loopPosition, rotationSpeed);
-            // hud.OnActionClick();
-        }
-
 
         private void PlayJumpSound()
         {

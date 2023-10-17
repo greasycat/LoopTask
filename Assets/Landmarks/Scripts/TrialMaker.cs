@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
 namespace Landmarks.Scripts
@@ -12,7 +13,7 @@ namespace Landmarks.Scripts
     public class TrialMaker : EditorWindow
     {
         private TextField csvPath;
-        private static readonly string[] Keyword = { "teleport", "name", "loop", "walkto", "trigger", "pause" };
+        private static readonly string[] Keyword = { "teleport", "name", "loop", "walkto", "trigger", "pause", "turn" };
 
         [MenuItem("LoopTask/TrialMaker")]
         public static void ShowWindow()
@@ -65,7 +66,16 @@ namespace Landmarks.Scripts
                 foreach (var line in lines)
                 {
                     // Create an empty game object and add to the scene
-                    var root = new GameObject();
+                    var root = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    
+                    // set the scale to 0.1, 0.1, 0.1
+                    root.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                    //disable meshrenderer
+                    root.GetComponent<MeshRenderer>().enabled = false;
+                    root.GetComponent<SphereCollider>().radius = 0.5f;
+                    root.GetComponent<SphereCollider>().isTrigger = true;
+                    
+                    
                     if (Selection.activeObject != null)
                     {
                         root.transform.parent = Selection.activeGameObject.transform;

@@ -12,6 +12,7 @@ namespace Landmarks.Scripts
         WalkTo,
         Trigger,
         Pause,
+        Turn,
         None
     }
 
@@ -34,6 +35,8 @@ namespace Landmarks.Scripts
                     return new LM_TriggerAction() { type = ActionType.Trigger};
                 case "pause":
                     return LM_PauseAction.FromObject(transform);
+                case "turn":
+                    return LM_TurnAction.FromObject(transform);
                 default:
                     return new LM_NoneAction() { type = ActionType.None };
             }
@@ -149,11 +152,12 @@ namespace Landmarks.Scripts
     public class LM_WalkToAction : LM_Action
     {
         public Vector3 destination;
-        public float speed;
+        public float walkingSpeed;
+        public float rotationSpeed;
         public new static LM_Action FromObject(Transform transform)
         {
             var childrenNames = GetAllChildrenNames(transform);
-            if (childrenNames.Count != 2)
+            if (childrenNames.Count != 3)
             {
                 Debug.LogError("Incorrect number of fields for LM_WalkToAction");
                 return new LM_NoneAction();
@@ -171,11 +175,13 @@ namespace Landmarks.Scripts
             }
             
             var speed = float.Parse(childrenNames[1]);
+            var rotationSpeed = float.Parse(childrenNames[2]);
             
             return new LM_WalkToAction()
             {
                 destination = destination,
-                speed = speed,
+                walkingSpeed = speed,
+                rotationSpeed = rotationSpeed,
                 type = ActionType.WalkTo
             };
         }
@@ -195,6 +201,10 @@ namespace Landmarks.Scripts
         // {
         //     return new LM_NoneAction();
         // }
+        public LM_NoneAction()
+        {
+            type = ActionType.None;
+        }
     }
     
     public class LM_PauseAction : LM_Action
@@ -215,6 +225,35 @@ namespace Landmarks.Scripts
             {
                 duration = duration,
                 type = ActionType.Pause
+            };
+        }
+    }
+
+    public class LM_TurnAction : LM_Action
+    {
+        public string direction;
+        public float angle;
+        public float rotationSpeed;
+
+        public new static LM_Action FromObject(Transform transform)
+        {
+            var childrenNames = GetAllChildrenNames(transform);
+            if (childrenNames.Count != 3)
+            {
+                Debug.LogError("Incorrect number of fields for LM_TurnAction");
+                return new LM_NoneAction();
+            }
+
+            var direction = childrenNames[0];
+            var angle = float.Parse(childrenNames[1]);
+            var rotationSpeed = float.Parse(childrenNames[2]);
+
+            return new LM_TurnAction()
+            {
+                direction = direction,
+                angle = angle,
+                rotationSpeed = rotationSpeed,
+                type = ActionType.Turn
             };
         }
     }

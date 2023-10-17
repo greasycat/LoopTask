@@ -37,52 +37,14 @@ public class ObserverController : MonoBehaviour
 
     public void TestButtonClick()
     {
-        try
-        {
-            _hud.OnActionClick();
-            // var startingAngle = float.Parse(startingAngleInput.text)*Mathf.PI/180f;
-            var stoppingAngle = float.Parse(stoppingAngleInput.text)*Mathf.PI/180f;
-            var counterclockwise = counterclockwiseToggle.isOn;
-            
-            const string pattern = @"[-+]?\d*\.?\d+";
-            var speedMatch = Regex.Matches(speedInput.text, pattern).Cast<Match>().Take(3).ToList();
-            var startingPosMatch = Regex.Matches(startingPositionInput.text, pattern).Cast<Match>().Take(3).ToList();
-            var loopCenterMatch = Regex.Matches(loopCenterInput.text, pattern).Cast<Match>().Take(3).ToList();
-            var startingPosition = new Vector3(float.Parse(startingPosMatch[0].Value), float.Parse(startingPosMatch[1].Value), float.Parse(startingPosMatch[2].Value));
-            var loopCenterPosition = new Vector3(float.Parse(loopCenterMatch[0].Value), float.Parse(loopCenterMatch[1].Value), float.Parse(loopCenterMatch[2].Value));
-            var walkingSpeed = float.Parse(speedMatch[0].Value);
-            var turningSpeed = float.Parse(speedMatch[1].Value);
-            var loopingSpeed = float.Parse(speedMatch[2].Value);
-            
-            _playerController.TestAutoMode(loopCenterPosition,startingPosition, stoppingAngle, counterclockwise, walkingSpeed, turningSpeed, loopingSpeed, _hud);
-        }
-        catch (System.Exception e)
-        {
-            AddErrorMessage("Invalid Input\n" + $"Reason: {e.Message}");
-            Debug.LogError("Invalid Input");
-        }
     }
 
     public void StartButtonClick()
     {
-        if (firstTime)
-        {
-            _hud.OnActionClick();
-            firstTime = false;
-        }
-
-        StartCoroutine(StartTrial());
     }
     
     public void StartButtonClickRecenter()
     {
-        if (firstTime)
-        {
-            _hud.OnActionClick();
-            firstTime = false;
-        }
-
-        StartCoroutine(StartTrial(true));
     }
 
     private Vector3 ConvertTypeToVector(string type)
@@ -123,6 +85,7 @@ public class ObserverController : MonoBehaviour
 
     public IEnumerator RunAllActionSets()
     {
+        _playerController.EnableAutoMode();
         yield return new WaitUntil(()=> moveObject.destination != null);
         var actionSet = new LM_ActionSet(moveObject.destination.transform);
         foreach (var action in actionSet)
@@ -158,48 +121,6 @@ public class ObserverController : MonoBehaviour
 
 
 
-    }
-    
-    private IEnumerator StartTrial(bool recenter = false)
-    {
-        yield return new WaitUntil(()=> moveObject.destination != null);
-        Debug.Log($"Destination: {moveObject.destination.name}");
-        // Get the text in the name of the destination object
-        // use the following format xx-xx-xx
-        var destinationName = moveObject.destination.name;
-        var destinationNameSplit = destinationName.Split('-');
-        var speedSplit = speedInput.text.Split(',');
-        try
-        {
-            var type = ConvertTypeToVector(destinationNameSplit[0]);
-            var radius = GetNumber(destinationNameSplit[1]);
-            var clock = destinationNameSplit[2].ToLower();
-            var counterClockwise = clock == "counter";
-            var rotation = 90f;
-            if (destinationNameSplit.Length == 4)
-            {
-                rotation = float.Parse(destinationNameSplit[3]);
-            }
-            
-            if (speedSplit.Length != 4)
-            {
-                AddErrorMessage("Invalid Speed Format\n" + "Reason: Speed must be in the format x,y,z");
-                yield break;
-            }
-            
-            var walkingSpeed = float.Parse(speedSplit[0]);
-            var turningSpeed = float.Parse(speedSplit[1]);
-            var loopingSpeed = float.Parse(speedSplit[2]);
-            var duration = float.Parse(speedSplit[3]);
-            
-            
-            Debug.Log("Type: " + type + " Radius: " + radius + " Clock: " + clock);
-            _playerController.TestAutoMode(Vector3.zero, type*radius,ToRadians(rotation), counterClockwise, walkingSpeed, turningSpeed, loopingSpeed, _hud, duration ,recenter);
-        } catch (System.Exception e)
-        {
-            AddErrorMessage("Invalid Target Naming Format\n" + $"Reason: {e.Message}");
-        }
-        
     }
     
     private float ToRadians(float degrees)
