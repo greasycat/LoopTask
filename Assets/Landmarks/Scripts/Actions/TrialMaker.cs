@@ -1,19 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
-using System.Runtime.InteropServices;
 
-namespace Landmarks.Scripts
+namespace Landmarks.Scripts.Actions
 {
     public class TrialMaker : EditorWindow
     {
         private TextField csvPath;
-        private static readonly string[] Keyword = { "teleport", "name", "loop", "walkto", "trigger", "pause", "turn" };
+        private static readonly string[] Keyword = { "teleport", "name", "loop", "walk", "trigger", "pause", "turn" };
+
+
+        private static readonly string DefaultPath = Path.Combine(
+            Directory.GetParent(Application.dataPath)?.ToString() ?? "", "DataToGenerateTrials.tsv");
 
         [MenuItem("LoopTask/TrialMaker")]
         public static void ShowWindow()
@@ -26,7 +27,10 @@ namespace Landmarks.Scripts
         {
             var root = rootVisualElement;
             root.Add(new Label("Path to text containing trial information"));
-            csvPath = new TextField();
+            csvPath = new TextField
+            {
+                value = DefaultPath
+            };
 
             var csvPathButton = new Button(() =>
             {
@@ -90,6 +94,7 @@ namespace Landmarks.Scripts
                 Debug.LogError(e.Message);
             }
         }
+        
 
         private static void ParseLine(string line, GameObject parent)
         {

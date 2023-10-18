@@ -31,6 +31,11 @@ public class MoveObject : ExperimentTask
     
     public bool destinationFromActionSet = false;
 
+    public void RotateStartObject()
+    {
+        
+    }
+
 
     public override void startTask()
     {
@@ -64,31 +69,31 @@ public class MoveObject : ExperimentTask
         if (destinationFromActionSet)
         {
 
-            var actionSet = new LM_ActionSet(destination.transform);
-            var firstWalk = (LM_WalkToAction)actionSet.GetFirstActionOfType(ActionType.WalkTo);
-            start.transform.position = firstWalk.destination;
-
-            var firstLoop = (LM_LoopAction) actionSet.GetFirstActionOfType(ActionType.Loop);
-            if (firstLoop != null)
-            {
-                Debug.Log(firstWalk.destination);
-                Vector3 readyFacingDirection;
-                if (firstLoop.loopDirection == "counterclockwise")
-                {
-                    readyFacingDirection = firstLoop.loopCenter - firstWalk.destination;
-                }
-                else
-                {
-                    readyFacingDirection = (firstWalk.destination - firstLoop.loopCenter);
-                }
-                
-
-                start.transform.rotation = Quaternion.LookRotation(readyFacingDirection);
-                rotation = start.transform.rotation;
-                Debug.Log("Rotation to"+ rotation.eulerAngles);
-
-
-            }
+            // var actionSet = new LM_ActionSet(destination.transform);
+            // var firstWalk = (LM_WalkToAction)actionSet.GetFirstActionOfType(ActionType.WalkTo);
+            // start.transform.position = firstWalk.Destination;
+            //
+            // var firstLoop = (LM_LoopAction) actionSet.GetFirstActionOfType(ActionType.Loop);
+            // if (firstLoop != null)
+            // {
+            //     Debug.Log(firstWalk.Destination);
+            //     Vector3 readyFacingDirection;
+            //     if (firstLoop.LoopDirection == "counterclockwise")
+            //     {
+            //         readyFacingDirection = firstLoop.LoopCenter - firstWalk.Destination;
+            //     }
+            //     else
+            //     {
+            //         readyFacingDirection = (firstWalk.Destination - firstLoop.LoopCenter);
+            //     }
+            //     
+            //
+            //     start.transform.rotation = Quaternion.LookRotation(readyFacingDirection);
+            //     rotation = start.transform.rotation;
+            //     Debug.Log("Rotation to"+ rotation.eulerAngles);
+            //
+            //
+            // }
         }
         else
         {

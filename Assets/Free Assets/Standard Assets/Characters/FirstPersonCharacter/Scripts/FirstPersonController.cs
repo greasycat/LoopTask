@@ -1,9 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Landmarks.Scripts;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityStandardAssets.CrossPlatformInput;
 using UnityStandardAssets.Utility;
 using Random = UnityEngine.Random;
@@ -49,7 +44,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool m_Jumping;
         private AudioSource m_AudioSource;
 
-        private bool _autoModeEnabled;
+        private bool disableManualMovement;
 
         private Coroutine _coroutine;
 
@@ -107,7 +102,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void FixedUpdate()
         {
-            if (!_autoModeEnabled)
+            if (!disableManualMovement)
             {
                 HandleManualMovement();
             }
@@ -156,133 +151,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_MouseLook.UpdateCursorLock();
         }
 
-        public IEnumerator TeleportAction(LM_TeleportAction action)
-        {
-            m_CharacterController.transform.position = action.destination;
-            yield return null;
-        }
-
-        public IEnumerator WalkToAction(LM_WalkToAction action)
-        {
-            Debug.Log("Walk to action");
-            var direction = action.destination - transform.position;
-            yield return TurnTo(direction, action.rotationSpeed);
-            yield return WalkTo(action.destination, action.walkingSpeed);
-            yield return null;
-        }
-
-        public IEnumerator LoopAction(LM_LoopAction action)
-        {
-            var counterClockwise = action.loopDirection == "counterclockwise";
-
-            yield return Loop(action.loopCenter, action.loopRadius, action.loopAngle, counterClockwise,
-                action.loopSpeed);
-        }
-        
-        public IEnumerator TriggerAction(LM_TriggerAction action, HUD hud)
-        {
-            yield return null;
-            hud.OnActionClick();
-        }
-        
-        public IEnumerator PauseAction(LM_PauseAction action)
-        {
-            yield return new WaitForSeconds(action.duration);
-        }
-        
-
-        public void EnableAutoMode()
-        {
-            _autoModeEnabled = true;
-        }
-        public void StopAutoMode()
-        {
-            _autoModeEnabled = false;
-        }
-
-        private void StopAutoCoroutine()
-        {
-            if (_coroutine != null)
-                StopCoroutine(_coroutine);
-        }
-
-        // private IEnumerator WalkAndTurn
-
-        private IEnumerator TurnTo(Vector3 targetRotation, float speed)
-        {
-            Debug.Log("Turn to");
-            var rotation = Quaternion.LookRotation(targetRotation);
-            var startRot = transform.rotation;
-            // get the shortest angle
-            var angle = Quaternion.Angle(startRot, rotation);
-            var duration = angle / (speed * 10);
-            for (var t = 0f; t < duration; t += Time.deltaTime)
-            {
-                transform.rotation = Quaternion.Slerp(startRot, rotation, t / duration);
-                yield return null;
-            }
-
-            transform.rotation = rotation;
-        }
-
-        private IEnumerator WalkTo(Vector3 targetPosition, float speed)
-        {
-            Debug.Log("walk to");
-            var startPosition = transform.position;
-            // transform.rotation = Quaternion.LookRotation(facingDirection);
-            var duration = Vector3.Distance(startPosition, targetPosition) / speed * 2f;
-            for (var t = 0f; t < duration; t += Time.deltaTime)
-            {
-                transform.position = Vector3.Lerp(startPosition, targetPosition, t / duration);
-                yield return null;
-            }
-
-            transform.position = targetPosition;
-            Debug.Log("Finished at target position: "+targetPosition);
-        }
-
-        private IEnumerator Loop(
-            Vector3 loopCenterPosition,
-            float radius,
-            float differenceAngle,
-            bool counterclockwise,
-            float speed
-        )
-        {
-            // calculate the current angle, 180 to -180
-            var currentAngle = Mathf.Atan2(transform.position.z - loopCenterPosition.z,
-                transform.position.x - loopCenterPosition.x);
-            // convert to 0 to 360
-            if (currentAngle < 0) currentAngle += 2 * Mathf.PI;
-
-            float finalAngle;
-            if (counterclockwise)
-            {
-                finalAngle = currentAngle + differenceAngle;
-            }
-            else
-            {
-                finalAngle = currentAngle - differenceAngle;
-            }
-
-            // var radius = Vector3.Distance(transform.position, loopCenterPosition);
-
-            Debug.Log($"Current angle: {currentAngle * 180 / Mathf.PI}");
-            Debug.Log($"stopping angle: {differenceAngle * 180 / Mathf.PI}");
-            Debug.Log($"Final angle: {finalAngle * 180 / Mathf.PI}");
-            for (var w = 0f; w < differenceAngle; w += Time.deltaTime * speed * 0.1f)
-            {
-                var angle = currentAngle + (counterclockwise ? 1 : -1) * w;
-                var x = Mathf.Cos(angle) * radius + loopCenterPosition.x;
-                var z = Mathf.Sin(angle) * radius + loopCenterPosition.z;
-                var y = loopCenterPosition.y;
-                var newPosition = new Vector3(x, y, z);
-                var direction = newPosition - m_CharacterController.transform.position;
-                m_CharacterController.transform.position = newPosition;
-                m_CharacterController.transform.rotation = Quaternion.LookRotation(direction);
-                yield return null;
-            }
-        }
 
         private void PlayJumpSound()
         {
@@ -392,6 +260,30 @@ namespace UnityStandardAssets.Characters.FirstPerson
         {
             m_MouseLook.LookRotation(transform, m_Camera.transform);
         }
+
+
+        /*
+         * Public coroutine methods to invoke actions
+         */
+
+
+
+
+        public void DisableManualMovement()
+        {
+            disableManualMovement = true;
+        }
+
+        public void EnableManualMovement()
+        {
+            disableManualMovement = false;
+        }
+
+        /*
+         * Private coroutine methods to perform the action
+         */
+
+
 
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
