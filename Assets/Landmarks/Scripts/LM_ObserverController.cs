@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using Landmarks.Scripts.Actions;
 using TMPro;
 using UnityEngine;
@@ -9,7 +10,7 @@ using UnityStandardAssets.Characters.FirstPerson;
 
 namespace Landmarks.Scripts
 {
-    public class ObserverController : MonoBehaviour
+    public class LM_ObserverController : MonoBehaviour
     {
         [SerializeField] private Experiment experiment;
 
@@ -22,8 +23,10 @@ namespace Landmarks.Scripts
         [SerializeField] private TMP_InputField loopCenterInput;
         [SerializeField] private TMP_Text errorMessageText;
         [SerializeField] private Toggle counterclockwiseToggle;
-        [SerializeField] private MoveObject moveObject;
+        [SerializeField] private TMP_Text infoMessageText;
         
+        
+        [SerializeField] private MoveObject moveObject;
         [SerializeField] private ObjectList objectList;
         private FirstPersonController _playerController;
         private HUD _hud;
@@ -61,6 +64,7 @@ namespace Landmarks.Scripts
 
             StartCoroutine(RunAllActionSets());
         }
+        
 
         public IEnumerator RunAllActionSets()
         {
@@ -68,12 +72,12 @@ namespace Landmarks.Scripts
             yield return new WaitUntil(() => objectList.objects.Count > 0);
             while (objectList.current < objectList.objects.Count)
             {
-                Debug.Log("Action set starts "+ objectList.current);
+                AddInfoMessage("Current Trial: " + objectList.objects[objectList.current].name);
                 yield return new WaitUntil(() => moveObject.destination != null);
                 var actionSet = new LM_ActionSet(moveObject.destination.transform);
                 yield return actionSet.PerformAll(_playerController.transform, () => { _hud.OnActionClick(); });
-                Debug.Log("Action set completed Once.");
             }
+            _hud.OnActionClick();
             _playerController.EnableManualMovement();
         }
 
@@ -82,6 +86,21 @@ namespace Landmarks.Scripts
             // add timestamp to the message
             message = $"{System.DateTime.Now:HH:mm:ss} {message}";
             errorMessageText.text += message + "\n";
+        }
+        
+        private void AddInfoMessage(string message)
+        {
+            
+            //check how many lines are in the text
+            var lines = infoMessageText.text.Split('\n').ToList();
+            if (lines.Count > 4)
+            {
+                lines.RemoveAt(0);
+            }
+            // add timestamp to the message
+            message = $"{System.DateTime.Now:HH:mm:ss} {message}";
+            lines.Add(message);
+            infoMessageText.text = string.Join("\n", lines);
         }
     }
 }

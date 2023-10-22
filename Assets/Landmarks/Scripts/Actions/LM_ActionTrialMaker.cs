@@ -7,35 +7,40 @@ using UnityEngine.UIElements;
 
 namespace Landmarks.Scripts.Actions
 {
-    public class TrialMaker : EditorWindow
+    public class LM_ActionTrialMaker : EditorWindow
     {
-        private TextField csvPath;
+        private TextField _csvPath;
         private static readonly string[] Keyword = { "teleport", "name", "loop", "walk", "trigger", "pause", "turn", "place" };
 
 
-        private static readonly string DefaultPath = Path.Combine(
-            Directory.GetParent(Application.dataPath)?.ToString() ?? "", "DataToGenerateTrials.tsv");
+        private string _defaultPath;
+            
 
-        [MenuItem("LoopTask/TrialMaker")]
+        [MenuItem("LoopTask/LM_ActionTrialMaker")]
         public static void ShowWindow()
         {
-            var window = GetWindow(typeof(TrialMaker));
-            window.titleContent = new GUIContent("TrialMaker");
+            var window = GetWindow(typeof(LM_ActionTrialMaker));
+            window.titleContent = new GUIContent("ActionTrialMaker");
+        }
+
+        public void OnEnable()
+        {
+            _defaultPath = Path.Combine(Directory.GetParent(Application.dataPath)?.ToString() ?? "", "DataToGenerateTrials.tsv");
         }
 
         private void CreateGUI()
         {
             var root = rootVisualElement;
             root.Add(new Label("Path to text containing trial information"));
-            csvPath = new TextField
+            _csvPath = new TextField
             {
-                value = DefaultPath
+                value = _defaultPath
             };
 
             var csvPathButton = new Button(() =>
             {
                 // Get the parent dir of Application.dataPath
-                csvPath.value = EditorUtility.OpenFilePanel("Select a file",
+                _csvPath.value = EditorUtility.OpenFilePanel("Select a file",
                     Directory.GetParent(Application.dataPath)?.ToString(), "tsv,txt");
             })
             {
@@ -44,21 +49,24 @@ namespace Landmarks.Scripts.Actions
 
             var generateButton = new Button(GenerateTrialObjects)
             {
-                text = "Generate Trial Objects"
+                text = "Import Trial Objects As Children of Selected GameObject"
+            };
+            
+            var exportButton = new Button(ExportSelection)
+            {
+                text = "Export Children of Selected GameObject"
             };
 
-            root.Add(csvPath);
+            var printChildrenButton = new Button(PrintChildren)
+            {
+                text = "Print Children"
+            };
+
+            root.Add(_csvPath);
             root.Add(csvPathButton);
             root.Add(generateButton);
-            root.Add(new Button(() =>
-            {
-                var gameObject = Selection.activeGameObject;
-                var list = gameObject.transform.Cast<Transform>()
-                    .OrderBy(t => t.GetSiblingIndex()).Select(t => t.name)
-                    .ToList();
-                //print first 5
-                Debug.Log(string.Join(",", list.Take(5).ToArray()));
-            }));
+            root.Add(exportButton);
+            root.Add(printChildrenButton);
         }
 
         private void GenerateTrialObjects()
@@ -66,7 +74,7 @@ namespace Landmarks.Scripts.Actions
             // Try to read the file
             try
             {
-                var lines = File.ReadAllLines(csvPath.value);
+                var lines = File.ReadAllLines(_csvPath.value);
                 foreach (var line in lines)
                 {
                     // Create an empty game object and add to the scene
@@ -93,6 +101,58 @@ namespace Landmarks.Scripts.Actions
             {
                 Debug.LogError(e.Message);
             }
+        }
+
+        private void ExportSelection()
+        {
+            // Try to open the file
+            try
+            {
+                var path = EditorUtility.SaveFilePanel("Save file", "", "export.tsv", "tsv");
+                if (path.Length == 0) return;
+
+                var writer = new StreamWriter(path);
+                
+                var gameObject = Selection.activeGameObject;
+                var trials = gameObject.transform.Cast<Transform>()
+                    .OrderBy(t => t.GetSiblingIndex());
+                foreach (var trial in trials)
+                {
+                    var outputLine = "";
+                    var actions = trial.Cast<Transform>().OrderBy(t => t.GetSiblingIndex());
+                    
+                    outputLine += $"name\t{trial.name}";
+                    
+                    foreach (var action in actions)
+                    {
+                        outputLine += $"\t{action.name}";
+                        outputLine = action.Cast<Transform>().Aggregate(outputLine, (current, fields) => current + $"\t{fields.name}");
+                    }
+                    
+                    writer.WriteLine(outputLine);
+                }
+                writer.Close();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+            }
+
+            
+        }
+        private static void PrintChildren()
+        {
+            var gameObject = Selection.activeGameObject;
+            var list = gameObject.transform.Cast<Transform>()
+                .OrderBy(t => t.GetSiblingIndex()).Select(t => t.name)
+                .ToList();
+            //print first 5
+            Debug.Log(string.Join(",", list.Take(5).ToArray()));
+        }
+
+        private static void TraverseChildren(GameObject gameObject)
+        {
+            
         }
         
 

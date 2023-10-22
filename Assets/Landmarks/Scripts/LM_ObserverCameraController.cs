@@ -2,7 +2,7 @@
 
 namespace Landmarks.Scripts
 {
-    public class ObserverCameraController : MonoBehaviour
+    public class LM_ObserverCameraController : MonoBehaviour
     {
         private Camera _camera;
 
@@ -10,7 +10,7 @@ namespace Landmarks.Scripts
         public float zoomTime = 0.1f;
 
         public float maxHeight = 12;
-        public float minHeight = 4f;
+        public float minHeight = 7f;
     
         private float zoomVelocity;
         private float targetHeight; 
