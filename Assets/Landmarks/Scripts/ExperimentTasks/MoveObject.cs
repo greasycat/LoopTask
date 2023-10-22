@@ -59,62 +59,30 @@ public class MoveObject : ExperimentTask
         {
             destination = destinations.currentObject();
         }
-
-        position = start.transform.position;
+        //
+        // position = start.transform.position;
         // if (useLocalRotation) rotation = start.transform.localRotation;
         // else rotation = start.transform.rotation;
-
-        // This is only valid for the looptask
-        // The footprint will use the the first walk to position
-        if (destinationFromActionSet)
-        {
-
-            // var actionSet = new LM_ActionSet(destination.transform);
-            // var firstWalk = (LM_WalkToAction)actionSet.GetFirstActionOfType(ActionType.WalkTo);
-            // start.transform.position = firstWalk.Destination;
-            //
-            // var firstLoop = (LM_LoopAction) actionSet.GetFirstActionOfType(ActionType.Loop);
-            // if (firstLoop != null)
-            // {
-            //     Debug.Log(firstWalk.Destination);
-            //     Vector3 readyFacingDirection;
-            //     if (firstLoop.LoopDirection == "counterclockwise")
-            //     {
-            //         readyFacingDirection = firstLoop.LoopCenter - firstWalk.Destination;
-            //     }
-            //     else
-            //     {
-            //         readyFacingDirection = (firstWalk.Destination - firstLoop.LoopCenter);
-            //     }
-            //     
-            //
-            //     start.transform.rotation = Quaternion.LookRotation(readyFacingDirection);
-            //     rotation = start.transform.rotation;
-            //     Debug.Log("Rotation to"+ rotation.eulerAngles);
-            //
-            //
-            // }
-        }
-        else
-        {
-            start.transform.position = destination.transform.position;
-        }
-        log.log(
-            "TASK_ROTATE\t" + start.name + "\t" + this.GetType().Name + "\t" +
-            start.transform.localEulerAngles.ToString("f1"), 1);
-
-        // if (useLocalRotation) start.transform.localRotation = destination.transform.localRotation;
-        // else start.transform.rotation = destination.transform.rotation;
-        log.log(
-            "TASK_POSITION\t" + start.name + "\t" + this.GetType().Name + "\t" +
-            start.transform.transform.position.ToString("f1"), 1);
-
-        if (swap)
-        {
-            destination.transform.position = position;
-            if (useLocalRotation) destination.transform.localRotation = rotation;
-            else destination.transform.rotation = rotation;
-        }
+        //
+        // // This is only valid for the looptask
+        // // The footprint will use the the first walk to position
+        // start.transform.position = destination.transform.position;
+        // log.log(
+        //     "TASK_ROTATE\t" + start.name + "\t" + this.GetType().Name + "\t" +
+        //     start.transform.localEulerAngles.ToString("f1"), 1);
+        //
+        // // if (useLocalRotation) start.transform.localRotation = destination.transform.localRotation;
+        // // else start.transform.rotation = destination.transform.rotation;
+        // log.log(
+        //     "TASK_POSITION\t" + start.name + "\t" + this.GetType().Name + "\t" +
+        //     start.transform.transform.position.ToString("f1"), 1);
+        //
+        // if (swap)
+        // {
+        //     destination.transform.position = position;
+        //     if (useLocalRotation) destination.transform.localRotation = rotation;
+        //     else destination.transform.rotation = rotation;
+        // }
     }
 
     public override bool updateTask()

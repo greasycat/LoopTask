@@ -39,7 +39,7 @@ namespace Landmarks.Scripts.Actions
         
         public IEnumerator PerformAll(Transform transform, Action triggerDelegate)
         {
-            
+            Debug.Log("Perform all actions");
             foreach (var action in _actions)
             {
                 if (action.Type == ActionType.Trigger)

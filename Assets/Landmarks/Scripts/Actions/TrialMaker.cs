@@ -10,7 +10,7 @@ namespace Landmarks.Scripts.Actions
     public class TrialMaker : EditorWindow
     {
         private TextField csvPath;
-        private static readonly string[] Keyword = { "teleport", "name", "loop", "walk", "trigger", "pause", "turn" };
+        private static readonly string[] Keyword = { "teleport", "name", "loop", "walk", "trigger", "pause", "turn", "place" };
 
 
         private static readonly string DefaultPath = Path.Combine(

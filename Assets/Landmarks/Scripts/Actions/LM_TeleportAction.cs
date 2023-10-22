@@ -6,8 +6,8 @@ namespace Landmarks.Scripts.Actions
 {
     public class LM_TeleportAction : LM_Action
     {
-        private Vector3 Destination { get; set; }
-        private float Angle { get; set; }
+        protected Vector3 Destination { get; set; }
+        protected float Angle { get; set; }
 
         public override IEnumerator Execute(Transform transform)
         {

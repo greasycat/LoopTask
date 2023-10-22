@@ -1,4 +1,4 @@
-name	Trial1	teleport	"pos:0,0,0"	face:90	walk	face:90	dist:1	spd:5	turn	dir:cw	ang:90	spd:2	pause	t:1	trigger	pause	t:1	loop	"pos:0,0,0"	r:1	ang:90	dir:cw	spd:5			loop	"pos:0,0,0"	r:1	ang:90	dir:cw	spd:10
-name	Trial2	teleport	"pos:0,0,1"	face:0	walk	face:0	dist:2	spd:5	turn	dir:ccw	ang:90	spd:2	pause	t:1	trigger	pause	t:1	loop	"pos:0,0,0"	r:2	ang:135	dir:ccw	spd:5	pause	t:3	loop	"pos:0,0,0"	r:2	ang:90	dir:ccw	spd:10
-name	Trial3	teleport	"pos:0,0,2"	face:-90	walk	face:-90	dist:2.5	spd:5	turn	dir:ccw	ang:90	spd:2	pause	t:1	trigger	pause	t:1	loop	"pos:0,0,0"	r:2.5	ang:135	dir:cw	spd:5			loop	"pos:0,0,0"	r:2.5	ang:90	dir:ccw	spd:5
-name	Trial4	teleport	"pos:0,0,3"	face:-180	walk	face:-180	dist:3	spd:5	turn	dir:ccw	ang:90	spd:2	pause	t:1	trigger	pause 	t:1	loop	"pos:0,0,0"	r:3	ang:135	dir:cw	spd:5	pause	t:3	loop	"pos:0,0,0"	r:3	ang:90	dir:ccw	spd:5
+name	Trial1	place	name:GoToStart	"pos:1,0,0"		face:-90		teleport	"pos:1,0,0"		face:0		turn	dir:cw	ang:90	spd:2	pause	t:1	trigger	pause	t:1	loop	"pos:0,0,0"	r:1	ang:90	dir:cw	spd:5			loop	"pos:0,0,0"	r:1	ang:90	dir:cw	spd:10
+name	Trial2	place	name:GoToStart	"pos:0,0,2"		face:180	teleport	"pos:0,0,2"		face:90		turn	dir:ccw	ang:90	spd:2	pause	t:1	trigger	pause	t:1	loop	"pos:0,0,0"	r:2	ang:135	dir:ccw	spd:5	pause	t:3	loop	"pos:0,0,0"	r:2	ang:225	dir:ccw	spd:10
+name	Trial3	place	name:GoToStart	"pos:-3,0,0"	face:0		teleport	"pos:-3,0,0"	face:-90	turn	dir:cw	ang:90	spd:2	pause	t:1	trigger	pause	t:1	loop	"pos:0,0,0"	r:3	ang:135	dir:cw	spd:5			loop	"pos:0,0,0"	r:3	ang:90	dir:ccw	spd:5
+name	Trial4	place	name:GoToStart	"pos:0,0,-4"	face:-90	teleport	"pos:0,0,-4"	face:180	turn	dir:cw	ang:90	spd:2	pause	t:1	trigger	pause 	t:1	loop	"pos:0,0,0"	r:4	ang:135	dir:cw	spd:5	pause	t:3	loop	"pos:0,0,0"	r:4	ang:90	dir:ccw	spd:5

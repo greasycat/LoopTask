@@ -10,6 +10,7 @@ namespace Landmarks.Scripts.Actions
     public enum ActionType
     {
         Teleport,
+        Place,
         Loop,
         Walk,
         Trigger,
@@ -44,6 +45,8 @@ namespace Landmarks.Scripts.Actions
                     return LM_PauseAction.FromObject(transform);
                 case "turn":
                     return LM_TurnAction.FromObject(transform);
+                case "place":
+                    return LM_PlaceAction.FromObject(transform);
                 default:
                     return new LM_NoneAction();
             }

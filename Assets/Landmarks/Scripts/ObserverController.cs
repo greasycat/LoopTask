@@ -23,6 +23,8 @@ namespace Landmarks.Scripts
         [SerializeField] private TMP_Text errorMessageText;
         [SerializeField] private Toggle counterclockwiseToggle;
         [SerializeField] private MoveObject moveObject;
+        
+        [SerializeField] private ObjectList objectList;
         private FirstPersonController _playerController;
         private HUD _hud;
         private bool firstTime = true;
@@ -63,9 +65,15 @@ namespace Landmarks.Scripts
         public IEnumerator RunAllActionSets()
         {
             _playerController.DisableManualMovement();
-            yield return new WaitUntil(() => moveObject.destination != null);
-            var actionSet = new LM_ActionSet(moveObject.destination.transform);
-            yield return actionSet.PerformAll(_playerController.transform, () => { _hud.OnActionClick(); });
+            yield return new WaitUntil(() => objectList.objects.Count > 0);
+            while (objectList.current < objectList.objects.Count)
+            {
+                Debug.Log("Action set starts "+ objectList.current);
+                yield return new WaitUntil(() => moveObject.destination != null);
+                var actionSet = new LM_ActionSet(moveObject.destination.transform);
+                yield return actionSet.PerformAll(_playerController.transform, () => { _hud.OnActionClick(); });
+                Debug.Log("Action set completed Once.");
+            }
             _playerController.EnableManualMovement();
         }
 
